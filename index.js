@@ -36,7 +36,7 @@ const queue = new Map();
 
 client.on("ready", () => {
     console.log("I am online!")
-    client.user.setActivity('🎵 Music', { type: "PLAYING" })
+    client.user.setActivity('🎵 Music    (*help)', { type: "PLAYING" })
 })
 
 client.on("message", async(message) => {
