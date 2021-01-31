@@ -160,8 +160,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
                 .setDescription(song.vDes)
                 .setURL(`https://www.youtube.com/watch?v=${song.vId}`)
                 .setColor('#ff0000')
-                .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`)
-                .setTimestamp();
+                .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`);
 
         // let dur = `${parseInt(serverQueue.songs[0].vLength / 60)}:${serverQueue.songs[0].vLength - 60 * parseInt(serverQueue.songs[0].vLength / 60)}`
         // let msg = new Discord.MessageEmbed()
