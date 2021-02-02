@@ -3,6 +3,7 @@ const ytpl = require('ytpl')
 const getYotubePlaylistId = require('get-youtube-playlist-id')
 const Discord = require('discord.js')
 
+let timer;
 module.exports.run = async (client, message, args, queue, searcher) => {
     const vc = message.member.voice.channel;
     if(!vc)
@@ -41,6 +42,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
     }
 
     async function videoHandler(songInfo, message, vc, playlist = false){
+        clearTimeout(timer);
         const serverQueue = queue.get(message.guild.id);
 
         const videoTitle = songInfo.videoDetails.title;
@@ -117,6 +119,8 @@ module.exports.run = async (client, message, args, queue, searcher) => {
             }
         }else{
             serverQueue.songs.push(song);
+            if(serverQueue.songs.length === 1)
+                play (message.guild, serverQueue.songs[0])
             if(playlist) return undefined
 
 
@@ -131,11 +135,14 @@ module.exports.run = async (client, message, args, queue, searcher) => {
             return message.channel.send(msg);
         }
     }
+
     function play(guild, song){
         const serverQueue = queue.get(guild.id);
         if(!song){
-            serverQueue.vChannel.leave();
-            queue.delete(guild.id);
+            timer = setTimeout(function() {
+                serverQueue.vChannel.leave();
+                queue.delete(guild.id);
+            }, 5000)
             return;
         }
         const dispatcher = serverQueue.connection
@@ -169,8 +176,10 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         //     .addField("Song duration: ", dur)
         //     .setThumbnail(serverQueue.songs[0].thumbnail)
         //     .setColor("PURPLE")
+
         return message.channel.send(nowPlayingEmbed);
     }
+
 }
 
 module.exports.config = {
