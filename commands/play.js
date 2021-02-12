@@ -125,14 +125,20 @@ module.exports.run = async (client, message, args, queue, searcher) => {
 
 
             let dur = `${parseInt(song.vLength / 60)}:${song.vLength - 60 * parseInt(song.vLength / 60)}`
-            let msg = new Discord.MessageEmbed()
-                .setTitle("Song Added")
-                .addField(song.title, "-----------")
-                .addField("Song duration: ", dur)
-                .addField("Song Place", serverQueue.songs.lastIndexOf(song) + 1)
-                .setThumbnail(song.thumbnail)
-                .setColor("PURPLE")
-            return message.channel.send(msg);
+
+            let addSongToQueue = new Discord.MessageEmbed()
+                .setAuthor("Song Added")
+                .setTitle(song.title)
+                .setURL(`https://www.youtube.com/watch?v=${song.vId}`)
+                .setColor('#ff0000')
+                .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`)
+                .addFields(
+                    { name: 'Song duration: ', value: dur, inline: true },
+                    { name: 'Song Place', value: serverQueue.songs.lastIndexOf(song) + 1, inline: true }
+                )
+                .setTimestamp();
+                                
+            return message.channel.send(addSongToQueue);
         }
     }
 
@@ -167,7 +173,8 @@ module.exports.run = async (client, message, args, queue, searcher) => {
                 .setDescription(song.vDes)
                 .setURL(`https://www.youtube.com/watch?v=${song.vId}`)
                 .setColor('#ff0000')
-                .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`);
+                .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`)
+                .setTimestamp();
 
         // let dur = `${parseInt(serverQueue.songs[0].vLength / 60)}:${serverQueue.songs[0].vLength - 60 * parseInt(serverQueue.songs[0].vLength / 60)}`
         // let msg = new Discord.MessageEmbed()
