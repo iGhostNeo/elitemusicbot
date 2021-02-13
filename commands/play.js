@@ -18,7 +18,19 @@ module.exports.run = async (client, message, args, queue, searcher) => {
     //if(url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)){
         try{
             await ytpl(playlistId).then(async playlist => {
-                message.channel.send(`**The playlist: "${playlist.title}" has been added**`)
+                //console.log(playlist);
+
+                let addPlayList = new Discord.MessageEmbed()
+                    .setAuthor('Playlist Added', 'https://i.imgur.com/dFd53fY.png', playlist.url)
+                    .setColor('#ff0000')
+                    .setThumbnail(playlist.bestThumbnail.url)
+                    .addFields(
+                        { name: 'Playlist Title', value: playlist.title, inline: true },
+                        { name: 'Song Count', value: playlist.estimatedItemCount, inline: true }
+                    )
+                    .setTimestamp();
+
+                message.channel.send(addPlayList)
                 playlist.items.forEach(async item => {
                     await videoHandler(await ytdl.getInfo(item.shortUrl), message, vc, true);
                 })
