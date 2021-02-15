@@ -172,7 +172,6 @@ module.exports.run = async (client, message, args, queue, searcher) => {
     }
 
     function play(guild, song){
-        message.delete();
         const serverQueue = queue.get(guild.id);
         if(!song){
             timer = setTimeout(function() {
