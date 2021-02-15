@@ -6,11 +6,21 @@ const Discord = require('discord.js')
 let timer;
 module.exports.run = async (client, message, args, queue, searcher) => {
     const vc = message.member.voice.channel;
+
     if(!vc)
         return message.channel.send("Please join a voice channel first");
     if (args.length < 1)
         return message.channel.send("Please enter something to search")
     let url = args.join("");
+
+    switch (url) {
+        case 'top':
+            url = "https://youtube.com/playlist?list=PL-urXa9yw6L_PbJ58doH4mDi81Ui3r4HE";
+            break;
+        case 'jada':
+            url = "https://www.youtube.com/playlist?list=PL7NDfWdeJCVKZevVhSoD2IeSoNDDeFs8l";
+            break;
+    }
 
     var playlistId = getYotubePlaylistId(url)
 

@@ -22,6 +22,6 @@ module.exports.run = (client, message, args, queue, searcher) => {
 }
 
 module.exports.config = {
-    name: "skip",
-    aliases: ["vskip","voteskip","next"]
+    name: "voteskip",
+    aliases: ["vskip","voteskip"]
 }
