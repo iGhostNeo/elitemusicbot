@@ -171,7 +171,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         }
     }
 
-    async function play(guild, song){
+    function play(guild, song){
         message.delete();
         const serverQueue = queue.get(guild.id);
         if(!song){
@@ -214,7 +214,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         //     .setThumbnail(serverQueue.songs[0].thumbnail)
         //     .setColor("PURPLE")
 
-        const nowPlay = await message.channel.send(nowPlayingEmbed)
+        return message.channel.send(nowPlayingEmbed);
         // await nowPlay.react('▶️');
         // await nowPlay.react('⏸️');
         // await nowPlay.react('⏹');
@@ -234,8 +234,6 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         //         cmdSkip.run(client, message, args, queue, searcher);
         //     }
         // })
-
-        return nowPlay;
     }
 
 }
