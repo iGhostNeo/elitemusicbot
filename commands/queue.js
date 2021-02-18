@@ -15,7 +15,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
     await queueEmbed.react('⬅️');
     await queueEmbed.react('➡️');
 
-    const reactionFilter = (reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && (message.author.id === user.id)
+    const reactionFilter = (reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) // && (message.author.id === user.id)
     const collector = queueEmbed.createReactionCollector(reactionFilter);
 
     collector.on('collect', (reaction, user) => {

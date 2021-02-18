@@ -2,10 +2,10 @@ const ytdl = require('ytdl-core');
 const ytpl = require('ytpl')
 const getYotubePlaylistId = require('get-youtube-playlist-id')
 const Discord = require('discord.js')
-const cmdReume = require('./resume');
-const cmdPause = require('./pause');
-const cmdStop = require('./stop');
-const cmdSkip = require('./fskip');
+const cmdReume = require('../React/resume');
+const cmdPause = require('../React/pause');
+const cmdStop = require('../React/stop');
+const cmdSkip = require('../React/fskip');
 
 let timer;
 module.exports.run = async (client, message, args, queue, searcher) => {
@@ -62,6 +62,10 @@ module.exports.run = async (client, message, args, queue, searcher) => {
             return message.channel.send("There are no results found");
         try {
         let songInfo = await ytdl.getInfo(result.first.url);
+
+        //console.log(songInfo);
+        //message.channel.send(songInfo.videoDetails.author.name)
+
         return videoHandler(songInfo, message, vc)
         }catch(err){
             message.channel.send(`Cannot queue song :c \n ${err} `)
@@ -171,9 +175,10 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         }
     }
 
-    function play(guild, song){
+    async function play(guild, song){
         const serverQueue = queue.get(guild.id);
         if(!song){
+            message.channel.send("Leaving the channel......")
             timer = setTimeout(function() {
                 serverQueue.vChannel.leave();
                 queue.delete(guild.id);
@@ -213,26 +218,40 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         //     .setThumbnail(serverQueue.songs[0].thumbnail)
         //     .setColor("PURPLE")
 
-        return message.channel.send(nowPlayingEmbed);
-        // await nowPlay.react('▶️');
-        // await nowPlay.react('⏸️');
-        // await nowPlay.react('⏹');
-        // await nowPlay.react('⏭️');
+        const nowPlay = await message.channel.send(nowPlayingEmbed)
+        await nowPlay.react('▶️');
+        await nowPlay.react('⏸️');
+        await nowPlay.react('⏹');
+        await nowPlay.react('⏭️');
 
-        // const reactionFilter = (reaction, user) => ['▶️', '⏸️', '⏹', '⏭️'].includes(reaction.emoji.name) && (message.author.id === user.id)
-        // const collector = nowPlay.createReactionCollector(reactionFilter);
+        const reactionFilter = (reaction, user) => ['▶️', '⏸️', '⏹', '⏭️'].includes(reaction.emoji.name) //&& (message.author.id === user.id)
+        const collector = nowPlay.createReactionCollector(reactionFilter, { dispose: true });
 
-        // collector.on('collect', (reaction, user) => {
-        //     if(reaction.emoji.name === '▶️'){
-        //         cmdReume.run(client, message, args, queue, searcher);
-        //     }else if(reaction.emoji.name === '⏸️'){
-        //         cmdPause.run(client, message, args, queue, searcher);
-        //     }else if(reaction.emoji.name === '⏹'){
-        //         cmdStop.run(client, message, args, queue, searcher);
-        //     }else if(reaction.emoji.name === '⏭️'){
-        //         cmdSkip.run(client, message, args, queue, searcher);
-        //     }
-        // })
+        collector.on('collect', (reaction, user) => {
+            if(reaction.emoji.name === '▶️'){
+                cmdReume.run(reaction, queue, user);
+            }else if(reaction.emoji.name === '⏸️'){
+                cmdPause.run(reaction, queue, user);
+            }else if(reaction.emoji.name === '⏹'){
+                cmdStop.run(reaction, queue, user);
+            }else if(reaction.emoji.name === '⏭️'){
+                cmdSkip.run(reaction, queue, user);
+            }
+        })
+
+        collector.on('remove', (reaction, user) => {
+            if(reaction.emoji.name === '▶️'){
+                cmdReume.run(reaction, queue, user);
+            }else if(reaction.emoji.name === '⏸️'){
+                cmdPause.run(reaction, queue, user);
+            }else if(reaction.emoji.name === '⏹'){
+                cmdStop.run(reaction, queue, user);
+            }else if(reaction.emoji.name === '⏭️'){
+                cmdSkip.run(reaction, queue, user);
+            }
+        })
+
+        return nowPlay;
     }
 
 }
