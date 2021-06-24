@@ -2,16 +2,17 @@ const ytdl = require('ytdl-core');
 const ytpl = require('ytpl')
 const getYotubePlaylistId = require('get-youtube-playlist-id')
 const Discord = require('discord.js')
-const cmdReume = require('../React/resume');
-const cmdPause = require('../React/pause');
-const cmdStop = require('../React/stop');
-const cmdSkip = require('../React/fskip');
+const { MessageButton, MessageActionRow } = require("discord-buttons")
+const cmdReume = require('../Button/resume');
+const cmdPause = require('../Button/pause');
+const cmdStop = require('../Button/stop');
+const cmdSkip = require('../Button/fskip');
 
 let timer;
 module.exports.run = async (client, message, args, queue, searcher) => {
     const vc = message.member.voice.channel;
 
-    if(!vc)
+    if (!vc)
         return message.channel.send("Please join a voice channel first");
     if (args.length < 1)
         return message.channel.send("Please enter something to search")
@@ -31,9 +32,9 @@ module.exports.run = async (client, message, args, queue, searcher) => {
 
     var playlistId = getYotubePlaylistId(url)
 
-    if(playlistId){
-    //if(url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)){
-        try{
+    if (playlistId) {
+        //if(url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)){
+        try {
             await ytpl(playlistId).then(async playlist => {
                 //console.log(playlist);
 
@@ -52,29 +53,29 @@ module.exports.run = async (client, message, args, queue, searcher) => {
                     await videoHandler(await ytdl.getInfo(item.shortUrl), message, vc, true);
                 })
             })
-        }catch(err){
+        } catch (err) {
             return message.channel.send(`Please insert a valid link or make sure that the playlist is visible\n${err}`)
         }
     }
-    else{
+    else {
         let result = await searcher.search(args.join(" "), { type: "video" })
-        if(result.first == null)
+        if (result.first == null)
             return message.channel.send("There are no results found");
         try {
-        let songInfo = await ytdl.getInfo(result.first.url);
+            let songInfo = await ytdl.getInfo(result.first.url);
 
-        //console.log(songInfo);
-        //message.channel.send(songInfo.videoDetails.author.name)
+            //console.log(songInfo);
+            //message.channel.send(songInfo.videoDetails.author.name)
 
-        return videoHandler(songInfo, message, vc)
-        }catch(err){
+            return videoHandler(songInfo, message, vc)
+        } catch (err) {
             message.channel.send(`Cannot queue song :c \n ${err} `)
             console.log(err)
         }
 
     }
 
-    async function videoHandler(songInfo, message, vc, playlist = false){
+    async function videoHandler(songInfo, message, vc, playlist = false) {
         clearTimeout(timer);
         const serverQueue = queue.get(message.guild.id);
 
@@ -124,7 +125,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         }
 
 
-        if(!serverQueue){
+        if (!serverQueue) {
             const queueConstructor = {
                 txtChannel: message.channel,
                 vChannel: vc,
@@ -140,21 +141,21 @@ module.exports.run = async (client, message, args, queue, searcher) => {
 
             queueConstructor.songs.push(song);
 
-            try{
+            try {
                 let connection = await queueConstructor.vChannel.join();
                 queueConstructor.connection = connection;
                 message.guild.me.voice.setSelfDeaf(true);
                 play(message.guild, queueConstructor.songs[0]);
-            }catch (err){
+            } catch (err) {
                 console.error(err);
                 queue.delete(message.guild.id);
                 return message.channel.send(`Unable to join the voice chat ${err}`)
             }
-        }else{
+        } else {
             serverQueue.songs.push(song);
-            if(serverQueue.songs.length === 1)
-                play (message.guild, serverQueue.songs[0])
-            if(playlist) return undefined
+            if (serverQueue.songs.length === 1)
+                play(message.guild, serverQueue.songs[0])
+            if (playlist) return undefined
 
 
             let dur = `${parseInt(song.vLength / 60)}:${song.vLength - 60 * parseInt(song.vLength / 60)}`
@@ -169,17 +170,19 @@ module.exports.run = async (client, message, args, queue, searcher) => {
                     { name: 'Song duration: ', value: dur, inline: true },
                     { name: 'Song Place', value: serverQueue.songs.lastIndexOf(song) + 1, inline: true }
                 )
-                .setTimestamp();
-                                
+                .setFooter(`Added by: ${message.author.tag}`, message.author.displayAvatarURL());
+
             return message.channel.send(addSongToQueue);
         }
     }
 
-    async function play(guild, song){
+    async function play(guild, song) {
         const serverQueue = queue.get(guild.id);
-        if(!song){
-            message.channel.send("Leaving the channel......")
-            timer = setTimeout(function() {
+        if (!song) {
+            message.channel.send("Leaving the channel......").then(msg => {
+                setTimeout(() => msg.delete(), 5000)
+            }).catch(console.error)
+            timer = setTimeout(function () {
                 serverQueue.vChannel.leave();
                 queue.delete(guild.id);
             }, 5000)
@@ -187,14 +190,14 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         }
         const dispatcher = serverQueue.connection
             .play(ytdl(song.url))
-            .on('finish', () =>{
-                if(serverQueue.loopone){  
+            .on('finish', () => {
+                if (serverQueue.loopone) {
                     play(guild, serverQueue.songs[0]);
                 }
-                else if(serverQueue.loopall){
+                else if (serverQueue.loopall) {
                     serverQueue.songs.push(serverQueue.songs[0])
                     serverQueue.songs.shift()
-                }else{
+                } else {
                     serverQueue.songs.shift()
                 }
                 play(guild, serverQueue.songs[0]);
@@ -202,13 +205,13 @@ module.exports.run = async (client, message, args, queue, searcher) => {
 
 
         const nowPlayingEmbed = new Discord.MessageEmbed()
-                .setAuthor('Now Playing...', 'https://i.imgur.com/dFd53fY.png')
-                .setTitle(song.embedTitle)
-                .setDescription(song.vDes)
-                .setURL(`https://www.youtube.com/watch?v=${song.vId}`)
-                .setColor('#ff0000')
-                .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`)
-                .setTimestamp();
+            .setAuthor('Now Playing...', 'https://i.imgur.com/dFd53fY.png')
+            .setTitle(song.embedTitle)
+            .setDescription(song.vDes)
+            .setURL(`https://www.youtube.com/watch?v=${song.vId}`)
+            .setColor('#ff0000')
+            .setThumbnail(`https://img.youtube.com/vi/${song.vId}/0.jpg`)
+            .setFooter(`Requested by: ${message.author.tag}`, message.author.displayAvatarURL());
 
         // let dur = `${parseInt(serverQueue.songs[0].vLength / 60)}:${serverQueue.songs[0].vLength - 60 * parseInt(serverQueue.songs[0].vLength / 60)}`
         // let msg = new Discord.MessageEmbed()
@@ -218,38 +221,58 @@ module.exports.run = async (client, message, args, queue, searcher) => {
         //     .setThumbnail(serverQueue.songs[0].thumbnail)
         //     .setColor("PURPLE")
 
-        const nowPlay = await message.channel.send(nowPlayingEmbed)
-        await nowPlay.react('▶️');
-        await nowPlay.react('⏸️');
-        await nowPlay.react('⏹');
-        await nowPlay.react('⏭️');
+        let resumeButton = new MessageButton().setLabel("Resume").setStyle('red').setID("resumeButton")
+        let pauseButton = new MessageButton().setLabel("Pause").setStyle('red').setID("pauseButton")
+        let stopButton = new MessageButton().setLabel("Stop").setStyle('red').setID("stopButton")
+        let nextButton = new MessageButton().setLabel("Next").setStyle('red').setID("nextButton")
 
-        const reactionFilter = (reaction, user) => ['▶️', '⏸️', '⏹', '⏭️'].includes(reaction.emoji.name) //&& (message.author.id === user.id)
-        const collector = nowPlay.createReactionCollector(reactionFilter, { dispose: true });
+        let nowPlay = await message.channel.send({ embed: nowPlayingEmbed, buttons: [resumeButton, pauseButton, stopButton, nextButton] })
 
-        collector.on('collect', (reaction, user) => {
-            if(reaction.emoji.name === '▶️'){
-                cmdReume.run(reaction, queue, user);
-            }else if(reaction.emoji.name === '⏸️'){
-                cmdPause.run(reaction, queue, user);
-            }else if(reaction.emoji.name === '⏹'){
-                cmdStop.run(reaction, queue, user);
-            }else if(reaction.emoji.name === '⏭️'){
-                cmdSkip.run(reaction, queue, user);
+        const collector = nowPlay.createButtonCollector((button) => button.id == "resumeButton" || button.id == "pauseButton" || button.id == "stopButton" || button.id == "nextButton", { time: song.vLength * 1000 })
+        collector.on("collect", (button) => {
+            button.defer();
+            if (button.id == "pauseButton") {
+                cmdPause.run(button, queue)
+            } else if (button.id == "resumeButton") {
+                cmdReume.run(button, queue)
+            } else if (button.id == "nextButton") {
+                cmdSkip.run(button, queue)
+            } else if (button.id == "stopButton") {
+                cmdStop.run(button, queue)
             }
         })
 
-        collector.on('remove', (reaction, user) => {
-            if(reaction.emoji.name === '▶️'){
-                cmdReume.run(reaction, queue, user);
-            }else if(reaction.emoji.name === '⏸️'){
-                cmdPause.run(reaction, queue, user);
-            }else if(reaction.emoji.name === '⏹'){
-                cmdStop.run(reaction, queue, user);
-            }else if(reaction.emoji.name === '⏭️'){
-                cmdSkip.run(reaction, queue, user);
-            }
-        })
+        // await nowPlay.react('▶️');
+        // await nowPlay.react('⏸️');
+        // await nowPlay.react('⏹');
+        // await nowPlay.react('⏭️');
+
+        // const reactionFilter = (reaction, user) => ['▶️', '⏸️', '⏹', '⏭️'].includes(reaction.emoji.name) //&& (message.author.id === user.id)
+        // const collector = nowPlay.createReactionCollector(reactionFilter, { dispose: true });
+
+        // collector.on('collect', (reaction, user) => {
+        //     if(reaction.emoji.name === '▶️'){
+        //         cmdReume.run(reaction, queue, user);
+        //     }else if(reaction.emoji.name === '⏸️'){
+        //         cmdPause.run(reaction, queue, user);
+        //     }else if(reaction.emoji.name === '⏹'){
+        //         cmdStop.run(reaction, queue, user);
+        //     }else if(reaction.emoji.name === '⏭️'){
+        //         cmdSkip.run(reaction, queue, user);
+        //     }
+        // })
+
+        // collector.on('remove', (reaction, user) => {
+        //     if(reaction.emoji.name === '▶️'){
+        //         cmdReume.run(reaction, queue, user);
+        //     }else if(reaction.emoji.name === '⏸️'){
+        //         cmdPause.run(reaction, queue, user);
+        //     }else if(reaction.emoji.name === '⏹'){
+        //         cmdStop.run(reaction, queue, user);
+        //     }else if(reaction.emoji.name === '⏭️'){
+        //         cmdSkip.run(reaction, queue, user);
+        //     }
+        // })
 
         return nowPlay;
     }

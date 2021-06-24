@@ -12,6 +12,8 @@ const searcher = new YTSearcher({
 });
 
 const client = new Discord.Client();
+require('discord-buttons')(client)
+
 client.command = new Discord.Collection();
 client.aliases = new Discord.Collection();
 
