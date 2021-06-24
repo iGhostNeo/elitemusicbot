@@ -13,7 +13,7 @@
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "get-youtube-playlist-id": "0.0.1",
-    "ytdl-core": "^4.8.2",
+    "ytdl-core": "git+https://github.com/KabirJaipal/node-ytdl-core.git",
     "ytpl": "^2.0.4",
     "ytsearcher": "^1.2.3"
   }
