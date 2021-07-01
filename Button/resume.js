@@ -1,3 +1,5 @@
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
 module.exports.run = (button, queue) => {
     const serverQueue = queue.get(button.guild.id)
     if (!serverQueue)
@@ -12,6 +14,10 @@ module.exports.run = (button, queue) => {
         return button.message.channel.send("The song is already playing!").then(msg => {
             setTimeout(() => msg.delete(), 5000)
         }).catch(console.error)
+    serverQueue.connection.dispatcher.resume();
+    await delay(100);
+    serverQueue.connection.dispatcher.pause();
+    await delay(100);
     serverQueue.connection.dispatcher.resume();
     //reaction.message.channel.send("The song has been resumed!");
 }
