@@ -36,7 +36,7 @@ fs.readdir('./commands/', (e, f) => {
 
 const queue = new Map();
 
-client.on("ready", () => {
+client.on("ready", async () => {
     console.log("I am online!")
     client.user.setActivity('🎵 Music    (*help)', { type: "PLAYING" })
 

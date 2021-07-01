@@ -1,6 +1,6 @@
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-module.exports.run = (button, queue) => {
+module.exports.run = async (button, queue) => {
     const serverQueue = queue.get(button.guild.id)
     if (!serverQueue)
         return button.message.channel.send("There is no music currently playing!").then(msg => {
