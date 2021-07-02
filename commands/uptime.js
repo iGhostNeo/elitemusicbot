@@ -2,7 +2,7 @@ module.exports.run = async (client, message, args, queue, searcher) => {
     var ms = client.uptime
     var sec = Math.floor((ms / 1000) % 60);
     var min = Math.floor((ms / (60 * 1000)) % 60);
-    var hrs = Math.floor((ms / (60 * 60 * 1000)) % 60);
+    var hrs = Math.floor((ms / (60 * 60 * 1000)) % 24);
     var days = Math.floor((ms / (24 * 60 * 60 * 1000)) % 60);
 
     var secStr, minStr, hrsStr, daysStr
